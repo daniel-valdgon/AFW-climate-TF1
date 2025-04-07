@@ -14,5 +14,21 @@ afw <- vect("1_data/Maps/boundaries/AFW_admin0.gpkg")
 plot(afw)
 
 #------------------------------------------------------------------------------#
-# Agricultural Drought Historical Frequency - FAO ASI (1984-2023)
+# ACLED georeferenced data
 #------------------------------------------------------------------------------#
+
+library(acledr)
+
+
+# get UCDP data
+getUCDP(db = "gedevents", version = "18.2", location = NULL)
+
+# get ACLED data
+getACLED(years = c(2019, 2024), iso = afw$code, event_type = "")
+
+# combine
+
+# select event types
+
+# create raster data with distance to conflict buffers
+
