@@ -7,30 +7,42 @@ library(terra)
 library(exactextractr)
 library(data.table)
 library(dplyr)
+library(h3o)
 
-setwd("~/Library/CloudStorage/OneDrive-WBG/West_Africa_Exposure")
-# setwd("C:/Users/wb587256/OneDrive - WBG/West_Africa_Exposure")
-
-#------------------------------------------------------------------------------#
-# boundaries
-#------------------------------------------------------------------------------#
-
-bounds <- st_read("1_data/Maps/boundaries/AFW_adminX.gpkg")
+# setwd("~/Library/CloudStorage/OneDrive-WBG/West_Africa_Exposure")
+setwd("C:/Users/wb587256/OneDrive - WBG/West_Africa_Exposure")
 
 #------------------------------------------------------------------------------#
-# population
+# h3 resolution 6 cells
 #------------------------------------------------------------------------------#
 
 pop <- rast("1_data/Population/GHS-POP_2025_3arcsec.tif")
 
-totalpop <- exact_extract(pop, bounds, fun = "sum",
-                          append_cols = c("geo_code")) |>
-  rename(pop = sum) |> mutate(pop_year = 2025)
+admin0 <- st_read("1_data/Maps/boundaries/AFW_admin0.gpkg") 
 
-write.csv(totalpop,"1_data/Population/ghs-pop_2025_admin2.csv",row.names = FALSE)
+for (c in admin0$code){
+  
+    aoi <- filter(admin0, code==c)
+    aoi_h3 <- sfc_to_cells(aoi$geom, 6, containment = "covers") |>
+      h3o::flatten_h3()
+    
+    h3 <- data.frame(code = c, 
+                     h3_6 = as.character(aoi_h3),
+                     pop = exact_extract(pop, st_as_sfc(aoi_h3), "sum"),
+                     pop_year = 2025)
+    
+    if(!exists("h3_afw")){h3_afw <- h3
+    } else{h3_afw <- rbind(h3_afw,h3)}
+}
 
-setDT(totalpop, key = "geo_code")
+write.csv(h3_afw, "1_data/Maps/boundaries/AFW_h3_6.csv",row.names = FALSE)
 
+totalpop <- filter(h3_afw, pop!=0)
+write.csv(totalpop,"1_data/Population/ghs-pop_2025_h3_6.csv",row.names = FALSE)
+
+setDT(totalpop, key = c("code", "h3_6"))
+
+rm(admin0, aoi, aoi_h3, h3, h3_afw)
 #------------------------------------------------------------------------------#
 # degree of urbanisation
 #------------------------------------------------------------------------------#
@@ -124,11 +136,11 @@ climates <- as.list(c(
 # exposure categories
 drought_cat <- c("<30% land affected","30-50% land affected",">50% land affected")
 days_cat <- c("0-10 days","10-20 days","20-50 days","50-100 days",
-             "100-200 days","200-300 days",">300 days")
+              "100-200 days","200-300 days",">300 days")
 flood_cat <- c("No flood","0-15 cm","15-50 cm","50-100 cm",
-              "100-150 cm",">150 cm")
-slr_cat <- c("No increase","0-15 cm","15-50 cm","50-100 cm",
                "100-150 cm",">150 cm")
+slr_cat <- c("No increase","0-15 cm","15-50 cm","50-100 cm",
+             "100-150 cm",">150 cm")
 esi_cat <- c("<28ºC","28-30ºC","30-32ºC","32-33ºC", "33-34ºC", "34-35ºC", 
              ">35ºC")
 air_cat <- c("0-5 µg/m3","5-10 µg/m3", "10-15 µg/m3", "15-25 µg/m3",
@@ -142,7 +154,7 @@ cat_labs <- list(
   slr_cat, slr_cat, slr_cat, 
   esi_cat, days_cat, days_cat, days_cat, days_cat, 
   air_cat)
-                 
+
 #------------------------------------------------------------------------------#
 # extract exposed population by degree of urbanization
 #------------------------------------------------------------------------------#
@@ -165,7 +177,7 @@ for (n in 1:length(haz_list)){
              dou = gsub("\\_.*", "", label),
              exp_cat = as.numeric(gsub(".*_", "", label))) |>
       left_join(data.frame(exp_cat = seq(cat_labs[[n]])-1,
-                         exp_lab = cat_labs[[n]]))
+                           exp_lab = cat_labs[[n]]))
     if (exists("exp_cats")){exp_cats <- rbind(exp_cats,cats)}
     else{exp_cats <- cats}
     if (exists("dou_haz")){dou_haz <- c(dou_haz,dlh)}
@@ -174,18 +186,20 @@ for (n in 1:length(haz_list)){
   names(dou_haz) <- freq
   
   # boundaries
-  bounds <- st_read("1_data/Maps/boundaries/AFW_adminX.gpkg")
+  bounds <- read.csv("1_data/Population/ghs-pop_2025_h3_6.csv") |>
+    mutate(geom = st_as_sfc(h3_from_strings(h3_6))) |> 
+    st_as_sf()
   
   # extract population exposed
   exp_haz <- exact_extract(dou_haz, bounds, 
                            fun = "weighted_frac", 
                            weights = pop, 
-                           append_cols = c("geo_code"), 
+                           append_cols = c("code", "h3_6"), 
                            stack_apply = TRUE)
   
   # reshape
   if (nlyr(dou_haz)==1){
-    colnames(exp_haz)[2:ncol(exp_haz)] <- paste0(colnames(exp_haz)[2:ncol(exp_haz)],".",names(dou_haz))
+    colnames(exp_haz)[3:ncol(exp_haz)] <- paste0(colnames(exp_haz)[3:ncol(exp_haz)],".",names(dou_haz))
   }
   exp_haz <- melt(setDT(exp_haz),
                   value.name = "exp_sh",
@@ -197,7 +211,7 @@ for (n in 1:length(haz_list)){
   
   # add categories and labels
   exp_haz <- exp_haz[as.data.table(exp_cats), on = c("freq","value")][
-    exp_sh>0,.(geo_code, hazard, source, climate, freq, 
+    exp_sh>0,.(code, h3_6, hazard, source, climate, freq, 
                dou, exp_cat, exp_lab, exp_sh)]
   
   # bind results for each hazard
@@ -208,100 +222,14 @@ for (n in 1:length(haz_list)){
   gc()
 }
 
-setDT(exp_all, key = c("geo_code"))
+setDT(exp_all, key = c("code, h3_6"))
 exp <- exp_all[totalpop][
-  pop>0,.(geo_code, pop, pop_year, hazard, source, climate, freq, 
+  pop>0,.(code, h3_6, pop, pop_year, hazard, source, climate, freq, 
           dou, exp_cat, exp_lab, exp_sh, exp_pop = pop*exp_sh)
 ]
 
 # save raw estimates
-saveRDS(exp, "3_results/exposure/exp_all.rds")
-arrow::write_parquet(exp, "3_results/exposure/exp_all.parquet")
+saveRDS(exp, "3_results/exposure/exp_all_h3.rds")
 
-#------------------------------------------------------------------------------#
-# summarise exposed population
-#------------------------------------------------------------------------------#
-library(openxlsx)
-
-exp <- readRDS("3_results/exposure/exp_all.rds")
-
-bounds <- st_read("1_data/Maps/boundaries/AFW_adminX.gpkg")
-
-for (h in unique(exp$hazard)){
-
-# adminX DOU level
-exp_admX_dou <- filter(exp, hazard==h) |>
-  left_join(st_drop_geometry(bounds)) |>
-  group_by(geo_code, hazard, climate, freq, dou) |>
-  mutate(pop = sum(exp_pop),exp_sh = exp_pop/pop) |> ungroup() |>
-  select(code:adm4_name, geo_code, dou, pop, pop_year, 
-         hazard:freq, exp_cat:exp_pop) |>
-  arrange(geo_code, hazard, climate, freq, dou, exp_cat) 
-
-# adminX level
-exp_admX <- group_by(exp_admX_dou,pick(code:adm4_name, geo_code, pop_year:exp_lab)) |>
-  summarise(across(c(pop,exp_pop), ~sum(.x, na.rm = TRUE))) |>
-  group_by(geo_code, hazard, climate, freq) |>
-  mutate(pop = sum(exp_pop),exp_sh = exp_pop/pop) |> ungroup() |>
-  select(code:adm4_name, geo_code, pop, pop_year, hazard:exp_lab, exp_sh, exp_pop) |>
-  arrange(geo_code, hazard, climate, freq, exp_cat) 
-
-# admin2 DOU level
-exp_adm2_dou <- group_by(exp_admX_dou,pick(code:adm2_name, dou, pop_year:exp_lab)) |>
-  summarise(across(c(pop,exp_pop), ~sum(.x, na.rm = TRUE))) |>
-  group_by(adm2_pcode, hazard, climate, freq, dou) |>
-  mutate(pop = sum(exp_pop),exp_sh = exp_pop/pop) |> ungroup() |>
-  select(code:adm2_name, dou, pop, pop_year, hazard:exp_lab, exp_sh, exp_pop) |>
-  arrange(adm2_pcode, hazard, climate, freq, dou, exp_cat) 
-
-# admin2 level
-exp_adm2 <- group_by(exp_admX_dou,pick(code:adm2_name, pop_year:exp_lab)) |>
-  summarise(across(c(pop,exp_pop), ~sum(.x, na.rm = TRUE))) |>
-  group_by(adm2_pcode, hazard, climate, freq) |>
-  mutate(pop = sum(exp_pop),exp_sh = exp_pop/pop) |> ungroup() |>
-  select(code:adm2_name, pop, pop_year, hazard:exp_lab, exp_sh, exp_pop) |>
-  arrange(adm2_pcode, hazard, climate, freq, exp_cat) 
-
-# admin1 dou level
-exp_adm1_dou <- group_by(exp_admX_dou,pick(code:adm1_name, dou, pop_year:exp_lab)) |>
-  summarise(across(c(pop,exp_pop), ~sum(.x, na.rm = TRUE))) |>
-  group_by(adm1_pcode, hazard, climate, freq, dou) |>
-  mutate(pop = sum(exp_pop),exp_sh = exp_pop/pop) |> ungroup() |>
-  select(code:adm1_name, dou, pop, pop_year, hazard:exp_lab, exp_sh, exp_pop) |>
-  arrange(adm1_pcode, hazard, climate, freq, dou, exp_cat) 
-
-# admin1 level
-exp_adm1 <- group_by(exp_admX_dou,pick(code:adm1_name, pop_year:exp_lab)) |>
-  summarise(across(c(pop,exp_pop), ~sum(.x, na.rm = TRUE))) |>
-  group_by(adm1_pcode, hazard, climate, freq) |>
-  mutate(pop = sum(exp_pop),exp_sh = exp_pop/pop) |> ungroup() |>
-  select(code:adm1_name, pop, pop_year, hazard:exp_lab, exp_sh, exp_pop) |>
-  arrange(adm1_pcode, hazard, climate, freq, exp_cat)
-
-# admin0 dou level
-exp_adm0_dou <- group_by(exp_admX_dou,pick(code:adm0_name, dou, pop_year:exp_lab)) |>
-  summarise(across(c(pop,exp_pop), ~sum(.x, na.rm = TRUE))) |>
-  group_by(adm0_pcode, hazard, climate, freq, dou) |>
-  mutate(pop = sum(exp_pop),exp_sh = exp_pop/pop) |> ungroup() |>
-  select(code:adm0_name, dou, pop, pop_year, hazard:exp_lab, exp_sh, exp_pop) |>
-  arrange(adm0_pcode, hazard, climate, freq, dou, exp_cat)
-
-# admin0 level
-exp_adm0 <- group_by(exp_admX_dou,pick(code:adm0_name, pop_year:exp_lab)) |>
-  summarise(across(c(pop,exp_pop), ~sum(.x, na.rm = TRUE))) |>
-  group_by(adm0_pcode, hazard, climate, freq) |>
-  mutate(pop = sum(exp_pop),exp_sh = exp_pop/pop) |> ungroup() |>
-  select(code:adm0_name, pop, pop_year, hazard:exp_lab, exp_sh, exp_pop) |>
-  arrange(adm0_pcode, hazard, climate, freq, exp_cat)
-
-# save to excel
-library(openxlsx)
-xl_lst <- list(
-  "AFW_admin0" = exp_adm0, "AFW_admin0_DoU" = exp_adm0_dou,
-  "AFW_admin1" = exp_adm1, "AFW_admin1_DoU" = exp_adm1_dou,
-  "AFW_admin2" = exp_adm2, "AFW_admin2_DoU" = exp_adm2_dou,
-  "AFW_adminX" = exp_admX, "AFW_adminX_DoU" = exp_admX_dou
-)
-write.xlsx(xl_lst, paste0("3_results/exposure/",h,".xlsx"))
-
-}
+# FIX AGRICULTURAL DROUGHT LABELS - also in 05_exposure.R
+# SAVE AS PARQUET
