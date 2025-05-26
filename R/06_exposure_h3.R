@@ -110,9 +110,9 @@ sources <- as.list(c(
   rep("CHC-CMIP6",4), "ACAG V6.GL.02.02"))
 
 hazards <- list(
-  "Agricultural drought - cropland", "Agricultural drought - grassland",
-  "Agricultural drought", "Drought - days VPD > 2kPa", 
-  "Drought - days VPD > 3kPa",
+  "Agricultural drought", "Agricultural drought - cropland", 
+  "Agricultural drought - grassland",
+  "Drought - days VPD > 2kPa", "Drought - days VPD > 3kPa",
   "Flood - any (90m)", "Flood - coastal undefended (90m)", 
   "Flood - fluvial undefended (90m)", "Flood - pluvial defended (90m)",
   "Flood - any (450m)", "Flood - coastal undefended (450m)", 
@@ -187,6 +187,7 @@ for (n in 1:length(haz_list)){
   
   # boundaries
   bounds <- read.csv("1_data/Population/ghs-pop_2025_h3_6.csv") |>
+    distinct(h3_6) |>
     mutate(geom = st_as_sfc(h3_from_strings(h3_6))) |> 
     st_as_sf()
   
@@ -194,7 +195,7 @@ for (n in 1:length(haz_list)){
   exp_haz <- exact_extract(dou_haz, bounds, 
                            fun = "weighted_frac", 
                            weights = pop, 
-                           append_cols = c("code", "h3_6"), 
+                           append_cols = c("h3_6"), 
                            stack_apply = TRUE)
   
   # reshape
@@ -222,14 +223,16 @@ for (n in 1:length(haz_list)){
   gc()
 }
 
-setDT(exp_all, key = c("code, h3_6"))
-exp <- exp_all[totalpop][
-  pop>0,.(code, h3_6, pop, pop_year, hazard, source, climate, freq, 
+# DROP CODE and H3_6 DUPLICATES to merge
+totalpop2 <- select(totalpop, -code) |>
+  distinct()
+
+exp <- exp_all[totalpop2, on = c("h3_6")][
+  pop>0,.(h3_6, pop, pop_year, hazard, source, climate, freq, 
           dou, exp_cat, exp_lab, exp_sh, exp_pop = pop*exp_sh)
 ]
 
+
 # save raw estimates
 saveRDS(exp, "3_results/exposure/exp_all_h3.rds")
-
-# FIX AGRICULTURAL DROUGHT LABELS - also in 05_exposure.R
-# SAVE AS PARQUET
+arrow::write_parquet(exp, "3_results/exposure/exp_all_h3.parquet")
