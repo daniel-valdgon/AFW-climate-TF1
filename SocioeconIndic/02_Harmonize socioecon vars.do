@@ -1,31 +1,14 @@
-*-----------------------------------------------------------------------
-*	Title: Socioeconomic indicators
+*---------------------------------------------------------------------------------------------------
+*	Title: Harmonize socio-economic variables using prepared data 
 *   Project: Regional study on exposure to shocks in SSA countries 
 *	Author: Bernardo Atuesta
-*   First written: Mar 17, 2025
-*   Last updated : Mar 18, 2025 by Bernardo Atuesta
-*-----------------------------------------------------------------------
-
-*Set Directories
-
-* Bernardo Atuesta
-if inlist("`c(username)'","wb384997") {
-	// Project paths
-	global userpath "C:\Users\wb384997\OneDrive - WBG\Documents" // CHANGE
-	global projectpath "$userpath\Climate Change\Regional study on Exposure to shocks\Shared folders\West_Africa_Exposure" // CHANGE
-
-	global data_hhss "$projectpath\1_data\Household_survey"
-	global results_excel "$projectpath\3_results\SocioeconIndic\Excel"	
-}
+*   First written: Mar 13, 2025
+*---------------------------------------------------------------------------------------------------
 
 
-// Set globals for the countries in SSAPOV with admin2 regions available
-global countries "BEN BFA CAF CIV CMR CPV GHA GIN GMB GNB LBR MLI MRT NER NGA SEN SLE TCD TGO"
-
-
-***********************************
-***# Socio-economic indicators #***
-***********************************
+*********************************************
+***# Harmonized socio-economic variables #***
+*********************************************
 
 // Open loop for countries
 foreach cty in $countries{
@@ -34,22 +17,32 @@ foreach cty in $countries{
 	use "$data_hhss\\`cty'\\RS_`cty'.dta", clear
 
 
-	***# Income: People who live below $2.15/day, $3.65/day and $6.85/day 
-
-	** Convert household welfare aggregate into USD 2017 PPPs per person per day and generate international poverty variables
-	gen dpcexp_pov = wel_PPP /365 / icp2017 / cpi2017 
-	label var dpcexp_pov "Daily per capita expenditure 2017PPP - for international poverty measurement"
-
+	***# Income: People who live below the poverty lines
+	foreach y in 2017 2021{
+		** Convert household welfare aggregate into USD `y' PPPs per person per day and generate international poverty variables
+		gen dpcexp_pov_`y' = wel_PPP /365 / icp`y' / cpi`y' 
+		label var dpcexp_pov_`y' "Daily per capita expenditure `y'PPP - for international poverty measurement"
+	}
 	// Identify households in poverty
-	gen p_2_15 = (dpcexp_pov < 2.15)
-	label var p_2_15 "Poverty - US 2.15 line"
+	gen p_2_15 = (dpcexp_pov_2017 < 2.15)
+	label var p_2_15 "Poverty - US 2.15 line (2017 PPP)"
 
-	gen p_3_65 = (dpcexp_pov < 3.65)
-	label var p_3_65 "Poverty - US 3.65 line"
+	gen p_3_65 = (dpcexp_pov_2017 < 3.65)
+	label var p_3_65 "Poverty - US 3.65 line (2017 PPP)"
 
-	gen p_6_85 = (dpcexp_pov < 6.85)
-	label var p_6_85 "Poverty - US 6.85 line"	
+	gen p_6_85 = (dpcexp_pov_2017 < 6.85)
+	label var p_6_85 "Poverty - US 6.85 line (2017 PPP)"	
+	
+	gen p_3 = (dpcexp_pov_2021 < 3)
+	label var p_3 "Poverty - US 3 line (2021 PPP)"
 
+	gen p_4_2 = (dpcexp_pov_2021 < 4.2)
+	label var p_4_2 "Poverty - US 4.2 line (2021 PPP)"
+
+	gen p_8_3 = (dpcexp_pov_2021 < 8.3)
+	label var p_8_3 "Poverty - US 8.3 line (2021 PPP)"	
+	
+	
 	***# Expenditure: % of food in total household per capita expenditure
 	gen pcfoodexp = pc_fd / pc_hh
 	label var pcfoodexp "Share of food in total household per capita expenditure"
@@ -61,7 +54,7 @@ foreach cty in $countries{
 	egen adleduhh = total(ageyrs>=18 & ageyrs!=. & inlist(educat5, 1, 2)), by(hid)
 	** Generate variable of indicator (no adults in hh have completed primary educ)
 	gen loweduc = (adultshh == adleduhh)
-	label var loweduc "No adults in household have completed primary education"
+	label var loweduc "No adults (18+) in household have completed primary education"
 
 	***# Education categories
 	tab educat5, gen(educat5_)
@@ -77,9 +70,9 @@ foreach cty in $countries{
 	***# Households where no members 12yo+ have completed 6 years of schooling
 
 	// Generate number of individuals 12+yo by household
-	egen n_adult0 = count(ageyrs) if ageyrs>=12, by(hid)
-	egen n_adult = max(n_adult0), by(hid)
-	drop n_adult0
+	egen n_12older0 = count(ageyrs) if ageyrs>=12, by(hid)
+	egen n_12older = max(n_12older0), by(hid)
+	drop n_12older0
 	// Identify individuals 12yo+ with less than 6 years of education
 	gen yrsschol_ind = 1 if ageyrs>=12 & (inrange(educyrs,0,5) | educyrs==.)
 	label var yrsschol_ind "Not completed six years of schooling (12 years or older)"
@@ -87,7 +80,7 @@ foreach cty in $countries{
 	egen tyrsschol_hh = total(yrsschol_ind), by(hid)
 	label var tyrsschol_hh "Number of HH members aged 12+ with less than 6 years of schooling"
 	// Identify households where no members 12yo+ have completed 6 years of schooling
-	gen yrsschol_hh = (n_adult == tyrsschol_hh) 
+	gen yrsschol_hh = (n_12older == tyrsschol_hh) 
 	label var yrsschol_hh "No HH member aged 12 or older has completed 6 years of schooling"
 
 
@@ -164,7 +157,7 @@ foreach cty in $countries{
 	***# Low quality materials: Natural or rudimentary
 	gen lowq_roof = (inrange(roof,1,7) | roof==15) // Roof with low quality materials
 	gen lowq_wall = (inrange(wall,1,10) | wall==19) // Walls with low quality materials
-	gen lowq_floor = (inrange(floor,1,6) | floor==14) // Walls with low quality materials
+	gen lowq_floor = (inrange(floor,1,6) | floor==14) // Floor with low quality materials
 
 	gen lowq_mat = (lowq_roof==1 | lowq_wall==1 | lowq_floor==1)
 	label var lowq_mat "At least one low quality material in walls floors or roof"
@@ -177,8 +170,9 @@ foreach cty in $countries{
 	gen notimprsanit = (imp_san_rec==0)
 	label var notimprsanit "Shared or not improved toilet (not improved sanitation)"	
 
-	***# Distance to nearest primary school (dispsch)
-	***# Distance to nearest health facility (disheal)
+	***# Distance to nearest primary school (dispsch): Not available for most countries, so it was discarded
+	***# Distance to nearest health facility (disheal): Not available for most countries, so it was discarded
+	
 	***# Ownership of at least one cellular phone (cellphone)
 	***# Ownership of a car (car)
 	***# Ownership of a fridge (fridge)
@@ -208,12 +202,6 @@ foreach cty in $countries{
 
 	***# Labor status (Employed, Unemployed, Out of labor force)
 	tab lstatus, gen(lstatus_)
-	// Exception: Some countries have no values in lstatus	
-	if ("`cty'" == "NGA"){
-		forvalues x=1(1)3{
-			gen lstatus_`x' = .
-		}
-	}
 
 	***# Workers per sector of labor activity (agriculture, industry and services)	
 	tab industrycat4, gen(indcat4_)
@@ -235,103 +223,33 @@ foreach cty in $countries{
 	gen nosoctrss = (socsec==0 & soctransf==0)
 	label var nosoctrss "Household neither receives social transfers nor contributes to social insurance"	
 
+	// Some cleaning for a better matching with exposure indicators
+	if ("`cty'" == "BFA"){
+		replace region3="Boussouma B" if region3=="Boussouma" & region2=="4 - Boulgou"
+		replace region3="Boussouma S" if region3=="Boussouma" & region2=="23 - Sanmatenga"
+	}
+	if ("`cty'" == "LBR"){
+		replace region2="Barclayville" if region1=="18 - Grand Kru" & region2==""
+		replace region2 = "Commonwealth 1" if region2 == "Commonwealth" & region1 == "30 - Montserrado"
+		replace region2 = "Commonwealth 2" if region2 == "Commonwealth" & region1 == "9 - Grand Bassa"
+	}
+	
+
+	** Label some variables missing labels
+	label var survey "Survey"
+	label var adultshh "Total of adults (18+) per household"
+	label var adleduhh "Total of adults (18+) per household with < primary complete"
+	label var n_12older "Number of people 12yo+ by household"
+	label var lowq_roof "Roof with low quality materials"
+	label var lowq_wall "Walls with low quality materials"
+	label var lowq_floor "Floor with low quality materials"
+	label var hhtremit "Total household income from remittances"	
+	
 
 	** Save file
-	save "$data_hhss\\`cty'\\RS_`cty'_soceconind.dta", replace
-}
-
-*******************************************************************
-***# Calculate socio-economic indicators by admin1-2-3 regions #***
-*******************************************************************
-
-// Save lists of variables in two locals (one for continuous variables and one for dummy variables)
-local varsc "dpcexp_pov pcfoodexp educyrs dispsch disheal pcremit"
-local varsp "p_2_15 p_3_65 p_6_85 educat5_* ageg_* male female disability lstatus_* indcat4_* loweduc yrsschol_hh scholatt water8_* noimpwater nobaswater noelec lowq_mat scookfl notimprsanit cellphone car fridge noassets accinter hh_remit bankacc mobbankacc nosoctrss"
-
-
-// Open loop for countries
-foreach cty in $countries{
-
-	// Open initial data with main harmonized variables
-	use "$data_hhss\\`cty'\\RS_`cty'_soceconind.dta", clear
-
-	drop if year== . // OJO!! CAF has 129 observations with year ==. (Pending for checking)
-	
-	// Multiply the dummy variables by 100 to obtain results in percentages
-	foreach v of varlist `varsp'{
-		replace `v' = 100*`v'
-	} 
-
-	// Generate a variable for National statistics
-	gen region0 = "0 - `cty'"
-
-	// Not al countries have non-missing region3, so this identifies the ones that do and considers it for the next loop
-	tab region3
-	local r3=r(r)
-
-	if `r3' == 0{
-		local ur = 2
-	}
-	else{
-		local ur = 3
-	}	
-
-	// Create a loop to obtain results at the national level (region0), admin1 (region1), admin2 (region2) and admin3 (region3)
-	forvalues r=0(1)`ur'{
-		preserve
-			// Collapse to obtain the indicator value of all variables by region
-			collapse (mean) `varsc' `varsp' [pw= wta_hh], by(country year region`r')
-			
-			// Rename variables for the next reshape
-			foreach v of varlist `varsc' `varsp'{
-				rename `v'  v_`v'
-			} 
-			
-			// Reshape file to long format
-			reshape long v_, i(country year region`r') j(indicator) string
-			
-			// Rename variable with values
-			rename v_ values
-			
-			// Save in a temporary file for posterior appending
-			tempfile `cty'_reg`r'
-			save ``cty'_reg`r'', replace	
-			
-		restore
-	}
-}
-
-
-// Create a loop for type of admin region to append results by country
-forvalues r=0(1)3{
-
-	// Create an empty file with an empty variables to be able to latter append
-	clear
-	gen A=.
-
-	** Countries with information up to admin2: BEN CIV CPV GHA GMB GNB LBR NER NGA SLE TGO
-	** Countries with information up to admin3: BFA CAF CMR GIN MLI MRT SEN TCD
- 
-	// Consider different lists of countries for admin3 and the rest
-	if (`r' == 3){
-		local clist "BFA CAF CMR GIN MLI MRT SEN TCD" 
-	}
-	else{
-		local clist "$countries"
-	}
-
-	// Create a loop for countries and append the corresponding tempfile	
-	foreach cty in `clist'{
-		append using ``cty'_reg`r''
-	}
-	
-	drop A // drop empty variable
-	
-	// Export results to Excel
-	egen concat=concat(country year region`r' indicator), punct("_")
-	order concat
-	export excel using "$results_excel\\RS_SocioeconIndic.xlsx", sheet("reg`r'", replace) cell(A1) firstrow(variables)		
+	save "$data_hhss\\`cty'\\RS_`cty'_se.dta", replace
 }
 
 
 
+	
