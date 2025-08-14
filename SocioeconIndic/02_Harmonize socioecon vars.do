@@ -147,7 +147,6 @@ foreach cty in $countries{
 	label val nobaswater nobaswater
 	label var nobaswater "Household has no access to basic water (improved + available within 30 min)"	
 
-
 	***# Does not have access to electricity
 	gen noelec = (electricity == 0)
 	label def noelec 0 "Access to electricity" 1 "No access to electricity", replace
@@ -234,8 +233,7 @@ foreach cty in $countries{
 		replace region2 = "Commonwealth 2" if region2 == "Commonwealth" & region1 == "9 - Grand Bassa"
 	}
 	
-
-	** Label some variables missing labels
+	** Labeling some variables without label
 	label var survey "Survey"
 	label var adultshh "Total of adults (18+) per household"
 	label var adleduhh "Total of adults (18+) per household with < primary complete"

@@ -5,6 +5,8 @@
 *   First written: Mar 17, 2025
 *-----------------------------------------------------------------------
 
+** OJO!! This do-file is useful for our own exercises, not for the database. Check content and change names after finishing the do-files for the database.
+
 *Set Directories
 
 * Bernardo Atuesta
