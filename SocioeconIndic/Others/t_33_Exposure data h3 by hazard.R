@@ -109,3 +109,15 @@ head(sea)
 write_dta(sea, "./3_results/exposure/Sea level rise - change in coastal flood depth (90m)_h3.dta")
 
 
+#################################################
+### This checks whether some values of h3_6 in the hosuehold surveys are not in the exposure data at the h3_6 level -- OJO!! INCLUIR ESTO EN UN SCRIPT DE BORRADOR, PORQUE NO DEBERIA QUEDAR EN EL DEFINITIVO.
+
+drought_f <- drought %>%
+  filter(h3_6 == "8659534f7ffffff")
+
+# View the filtered data
+print(drought_f)
+
+# Delete the drought_f database from the R-Studio environment
+rm(drought_f)
+
