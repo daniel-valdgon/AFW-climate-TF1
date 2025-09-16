@@ -20,7 +20,7 @@ spshape2dta AFW_adminX, replace saving(AFW_adminX)
 ** Do the same for AFW_admin2 and AFW_admin1 
 spshape2dta AFW_admin2, replace saving(AFW_admin2)
 spshape2dta AFW_admin1, replace saving(AFW_admin1)
-
+spshape2dta AFW_admin0, replace saving(AFW_admin0)
 
 ***********************************************************************************************************
 **# Generate file with admin codes corresponding to the lowest available level in the household surveys #**
@@ -153,6 +153,7 @@ merge 1:1 geo_code using "$projectpath\1_data\Maps\boundaries\AFW_adminHS.dta", 
 *drop if _merge==1 // There is one observation in the household survey of MLI that is not in the AFW_adminHS data (region3=="11102)"
 *drop _merge
 
+merge m:1 code using "$projectpath\1_data\Maps\boundaries\AFW_admin0.dta", nogen keep(match using)
 
 // Label the poverty categories and generate a categorical variable for each poverty variable
 label def povcat 1 "No Data" 2 "< 5%" 3 "5 - 10%" 4 "10 - 20%" 5 "20 - 30%" 6 "30 - 50%" 7 "> 50%", replace
@@ -190,7 +191,7 @@ No Data		Light Gray		RGB(211, 211, 211)
 // Draw the poverty map
 spmap p_2_15_cat using "$projectpath\1_data\Maps\boundaries\AFW_adminHS_shp.dta", id(_ID) ///
 	fcolor("211 211 211" "0 128 0" "144 238 144" "173 216 230" "100 149 237" "65 105 225" "0 0 139") ///
-	clmethod(unique) legend(size(small)) ///
+	ocolor(gs12 ..) clmethod(unique) legend(size(small)) ///
 	title("Poverty rates - AFW ($2.15, 2017 PPP)", size(medsmall))
 
 
@@ -310,6 +311,8 @@ collapse (mean) `varsc' `varsp' (rawsum) wta_hh (first) region* subnatidsurvey a
 
 *save "$data_hhss\\RS_All_se_admin_lsig.dta", replace
 save "$projectpath\3_results\hhss-exposure\\RS_All_se-gc-h3_admin_lsig.dta", replace
+
+use "$projectpath\3_results\hhss-exposure\\RS_All_se-gc-h3_admin_lsig.dta", clear
 
 // Merge the AFW_adminHS_lsig with map coordinates 
 merge 1:1 geo_code using "$projectpath\1_data\Maps\boundaries\AFW_adminHS_lsig.dta", nogen keep(match using)

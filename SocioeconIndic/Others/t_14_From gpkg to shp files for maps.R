@@ -30,12 +30,15 @@ st_write(gpkg_data, "./1_data/Maps/boundaries/AFW_adminX.shp")
     # AFW_adminX.shp, 
     # AFW_adminX.shx
 
-# Do the same for the files AFW_admin2 and AFW_admin1
+# Do the same for the files AFW_admin2 and AFW_admin1 and AFW_admin0 
 gpkg_data <- st_read("./1_data/Maps/boundaries/AFW_admin2.gpkg")
 st_write(gpkg_data, "./1_data/Maps/boundaries/AFW_admin2.shp") 
 
 gpkg_data <- st_read("./1_data/Maps/boundaries/AFW_admin1.gpkg")
 st_write(gpkg_data, "./1_data/Maps/boundaries/AFW_admin1.shp") 
+
+gpkg_data <- st_read("./1_data/Maps/boundaries/AFW_admin0.gpkg")
+st_write(gpkg_data, "./1_data/Maps/boundaries/AFW_admin0.shp") 
 
 
 ## Exploring the am24_admin0.gpkg datafile
