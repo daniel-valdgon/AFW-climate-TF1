@@ -37,8 +37,9 @@ No Data		Light Gray		RGB(211, 211, 211)
 // Draw the drought map
 spmap dr_f2p5_i30_sh_cat using "$projectpath\1_data\Maps\boundaries\AFW_adminHS_shp.dta", id(_ID) ///
 	fcolor("211 211 211" "0 128 0" "144 238 144" "100 149 237" "0 0 139") ///
-	clmethod(unique) legend(size(small)) ///
-	title("Share of population exposed to drought AEP2.5 and >30% land affected", size(medsmall))
+	ocolor(Greys) osize(vvvthin) clmethod(unique) legend(size(small)) ///
+	title("Share of population exposed to drought AEP2.5 and >30% land affected", size(medsmall)) ///
+	line(data("$projectpath\1_data\Maps\boundaries\AFW_admin0_shp.dta") size(medium) color(black))	
 
 // Save graph	
 graph save "$projectpath\3_results\exposure\Figures\AFW_map_dr_f2p5_i30_sh_cat_lav.gph", replace	
