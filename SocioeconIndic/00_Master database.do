@@ -21,9 +21,9 @@ if inlist("`c(username)'","wb384997") {
 }
 
 // Set globals for the countries in SSAPOV with admin2 regions available
-global countries "BEN   BFA 	 CAF   CIV 	 CMR 	CPV  GHA	  GIN   GMB  GNB   LBR  MLI   MRT  NER   NGA  SEN   SLE   TCD   TGO"
-global years 	"2021  2021  2021  2021  2021 	2015 2016	  2018  2020 2021  2016 2021  2019 2021  2018 2021  2018  2022  2021"
-global surveys 	"EHCVM EHCVM EHCVM EHCVM ECAM-V IDRF GLSS-VII EHCVM IHS  EHCVM HIES EHCVM EPCV EHCVM LSS  EHCVM SLIHS EHCVM EHCVM"
+global countries "BEN   BFA 	 CAF   CIV 	 CMR 	CPV  GAB  GHA	   GIN   GMB  GNB   LBR  MLI   MRT  NER   NGA  SEN   SLE   TCD   TGO"
+global years 	"2021  2021  2021  2021  2021 	2015 2017 2016	   2018  2020 2021  2016 2021  2019 2021  2018 2021  2018  2022  2021"
+global surveys 	"EHCVM EHCVM EHCVM EHCVM ECAM-V IDRF EGEP GLSS-VII EHCVM IHS  EHCVM HIES EHCVM EPCV EHCVM LSS  EHCVM SLIHS EHCVM EHCVM"
 
 
 ***************************************************

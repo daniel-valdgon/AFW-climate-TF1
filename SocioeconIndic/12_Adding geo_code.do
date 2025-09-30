@@ -15,13 +15,13 @@ foreach cty in $countries{
 	// Generate a variable for National statistics
 	gen region0 = "0 - `cty'"
 
-	** Countries with information up to admin2: BEN CIV CPV GHA GMB GNB LBR NER NGA SLE TGO
+	** Countries with information up to admin2: BEN CIV CPV GAB GHA GMB GNB LBR NER NGA SLE TGO
 	** Countries with information up to admin3: BFA CAF CMR GIN MLI MRT SEN TCD
 	// Not al countries have non-missing region3, so this identifies the ones that do and considers it for the next loop
 	tab region3
 	local r3=r(r)
 
-	if `r3' == 0 | "`cty'" == "GIN" | "`cty'" == "MRT" | "`cty'" == "SEN" | "`cty'" == "TCD"{
+	if `r3' == 0 | "`cty'" == "GAB" | "`cty'" == "GIN" | "`cty'" == "MRT" | "`cty'" == "SEN" | "`cty'" == "TCD"{
 		local ur = 2
 	}
 	else{
@@ -48,10 +48,10 @@ foreach cty in $countries{
 
 	*Note: in MLI, there are 1,710 obs (3.93%) that correspond to region3 values that do not have a matching geo_code in exposure data, but they do have a matching h3 code, so we keep them.
 		
-	drop *_prev // Drop regional variable we do not need
+	cap drop *_prev // Drop regional variable we do not need
 
 	label var geo_code "Lowest regional level available hhss (merges with hazard data)"
-	
+
 	save "$projectpath\3_results\hhss-exposure\\`cty'\\RS_`cty'_se_geocode.dta", replace
 }
 

@@ -8,7 +8,7 @@
 
 // Open loop for countries
 foreach cty in $countries{
-
+local cty = "GAB"
 	use "$projectpath\3_results\hhss-exposure\\`cty'\\RS_`cty'_se_geocode_h3.dta", clear
 
 	gen sep0 = "sep0"
@@ -30,6 +30,11 @@ foreach cty in $countries{
 	gen sep2 = "sep2"
 	label var sep2 "******* Section 2: Survey variables *******"
 	local sec2 "sep2 year survey"
+
+	if "`cty'" == "GAB"{
+		gen region4 = ""
+		replace subnatidsurvey = region1
+	}
 
 	gen sep3 = "sep3"
 	label var sep3 "******* Section 3: Location and GPS variables *******"

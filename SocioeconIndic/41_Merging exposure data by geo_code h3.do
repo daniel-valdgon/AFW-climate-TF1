@@ -28,7 +28,7 @@ Note: We use the following hazards and thresholds, based on what was done for th
 
 /* This is the lowest available level in the household surveys per country:
 	Admin1: CPV	
-	Admin2: BEN CAF CIV GHA GIN GMB GNB LBR MRT NER NGA SEN SLE TCD TGO	
+	Admin2: BEN CAF CIV GAB GHA GIN GMB GNB LBR MRT NER NGA SEN SLE TCD TGO	
 	Admin3: BFA CMR MLI 
 */
 

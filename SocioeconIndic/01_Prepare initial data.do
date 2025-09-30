@@ -22,7 +22,6 @@ foreach cty in $countries{
 	local year : word `i' of $years
 	local survey : word `i' of $surveys
 
-
 	display in red "`cty' - `year' - `survey'"
 
 	***************************
@@ -132,6 +131,55 @@ foreach cty in $countries{
 	}
 }	
 
+
+*******************************************************************************************************
+***# Create file with regions and GPS variables from raw data to merge with SSAPOV files for Gabon #***
+** Note: This file was created for Gabon because its SSAPOV files were missing regions and GPS variables.	
+	
+// Open raw data with village and household ID variables
+datalibweb, country(GAB) year(2017) type(SSARAW) surveyid(GAB_2017_EGEP_v01_M) filename(MENAGE_REC.dta)
+
+// Save in shared folder
+save "$data_hhss\\GAB\\SSARAW_GAB_2017_EGEP_v01_M_MENAGE_REC.dta", replace
+
+// Open Excel file with village codes and names
+import excel "$data_hhss\\GAB\\NOMMENCLATURE DES ENTITES ADMINISTRATIVES_2017_BA.xlsx", sheet("CODES_2013") firstrow clear
+
+// Edit variables
+*destring Code, replace
+rename (PROV_LABEL DEP_LABEL ARR_LABEL PROV_CODE DEP_CODE ARR_CODE) (region1 region2 region3 reg1code reg2code village)
+
+// Save in a temporary file
+tempfile vilcode
+save `vilcode', replace	
+
+// Open raw data with village and household ID variables
+use "$data_hhss\\GAB\\SSARAW_GAB_2017_EGEP_v01_M_MENAGE_REC.dta", clear
+
+// Merge with village code and names
+merge m:1 village using `vilcode', nogen keep(match)
+
+// Generate household ID variable to merge with SSAPOV files
+gen hid = grappe_cor*100 + menage_cor
+tostring hid, replace
+
+// Edit GPS variables
+rename (gps_prefill_latitude gps_prefill_longitude) (gps_lat gps_lon)
+
+// Generate empty GPS variables not available
+foreach var in loc_id{
+	cap gen `var' = .
+}
+foreach var in loc_type gps_level	gps_mod gps_priv{
+	cap gen `var' = ""
+}
+
+// Keep the variables we need
+keep hid region1 region2 region3 gps_lat gps_lon loc_id loc_type gps_level gps_mod gps_priv 
+
+// Save file
+save "$data_hhss\\GAB\\SSARAW_GAB_2017_EGEP_v01_M_MENAGE_REC_mod.dta", replace
+
 */
 
 ***************************************************************************************
@@ -146,7 +194,6 @@ foreach cty in $countries{
 
 	local year : word `i' of $years
 	local survey : word `i' of $surveys
-
 
 	display in red "`cty' - `year' - `survey'"
 
@@ -197,6 +244,10 @@ foreach cty in $countries{
 	else if ("`cty'" == "TCD"){
 		merge 1:1 hhid using "$data_hhss\\`cty'\\`cty'_2022_EHCVM_V01_M_V01_A_GMD_LOC.dta"
 	}
+	else if ("`cty'" == "GAB"){
+		drop region*
+		merge 1:1 hid using "$data_hhss\\`cty'\\SSARAW_GAB_2017_EGEP_v01_M_MENAGE_REC_mod.dta"
+	}	
 	else{
 		gen _merge=.
 	}

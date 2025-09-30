@@ -205,7 +205,7 @@ foreach cty in $countries{
 	***# Workers per sector of labor activity (agriculture, industry and services)	
 	tab industrycat4, gen(indcat4_)
 	// Exception: Some countries have no values in industrycat4	
-	if ("`cty'" == "CAF" | "`cty'" == "CMR" | "`cty'" == "CPV" | "`cty'" == "GIN" | "`cty'" == "LBR" | "`cty'" == "MRT"){
+	if ("`cty'" == "GAB" | "`cty'" == "CAF" | "`cty'" == "CMR" | "`cty'" == "CPV" | "`cty'" == "GIN" | "`cty'" == "LBR" | "`cty'" == "MRT"){
 		forvalues x=1(1)4{
 			gen indcat4_`x' = .
 		}

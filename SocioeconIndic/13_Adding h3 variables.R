@@ -18,11 +18,11 @@ library(dplyr)
 
 setwd("C:/Users/wb384997/OneDrive - WBG/Documents/Climate Change/Regional study on Exposure to shocks/Shared folders/West_Africa_Exposure")
 
-# Countries with GPS data: BEN BFA CIV GMB GNB MLI MRT NER SEN TCD TGO
+# Countries with GPS data: BEN BFA CIV GAB GMB GNB MLI MRT NER SEN TCD TGO
 # Countries without GPS data: CAF CMR CPV GHA GIN LBR NGA SLE
 
 # List of country codes
-countries <- c("BEN", "BFA", "CIV", "GHA", "GMB", "GNB", "MLI", "MRT", "NER", "SEN", "TCD", "TGO", "CAF", "CMR", "CPV", "GIN", "LBR", "NGA", "SLE")
+countries <- c("BEN", "BFA", "CIV", "GAB", "GHA", "GMB", "GNB", "MLI", "MRT", "NER", "SEN", "TCD", "TGO", "CAF", "CMR", "CPV", "GIN", "LBR", "NGA", "SLE")
 
 for (ctry in countries) {
   message("Processing: ", ctry)
