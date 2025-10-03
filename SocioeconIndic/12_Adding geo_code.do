@@ -30,7 +30,6 @@ foreach cty in $countries{
 
 	// Preserve data, import harmonized geo_code and household regional variable file and restore data
 	preserve
-
 		import excel using "$data_hhss\Harmonization_geocode-admin3.xlsx", sheet("`cty'") firstrow clear
 		
 		keep geo_code-hs_regcode	// Keep only the variables we need

@@ -8,7 +8,7 @@
 
 // Open loop for countries
 foreach cty in $countries{
-local cty = "GAB"
+
 	use "$projectpath\3_results\hhss-exposure\\`cty'\\RS_`cty'_se_geocode_h3.dta", clear
 
 	gen sep0 = "sep0"

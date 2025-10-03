@@ -24,6 +24,7 @@ setwd("C:/Users/wb384997/OneDrive - WBG/Documents/Climate Change/Regional study 
 # List of country codes
 countries <- c("BEN", "BFA", "CIV", "GAB", "GHA", "GMB", "GNB", "MLI", "MRT", "NER", "SEN", "TCD", "TGO", "CAF", "CMR", "CPV", "GIN", "LBR", "NGA", "SLE")
 
+
 for (ctry in countries) {
   message("Processing: ", ctry)
   

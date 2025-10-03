@@ -50,18 +50,22 @@ do "$dofiles//12_Adding geo_code.do"
 do "$dofiles//13_Editing data geo_code h3.do"
 
 
-*******************************************************************
-***# Generate exposure data at lowest regional level and at h3 #***
-*******************************************************************
+*********************************************************
+***# Generate exposure data at lowest regional level #***
+*********************************************************
 
 // Generate exposure data at the lowest regional level available (geo_code)
 do "$dofiles//21_Exposure data geo_code by hazard.do"
 
+********************************************
+***# Generate exposure data at h3 level #***
+********************************************
+
 // Generate exposure data files at the h3_6 level to merge with harmonized survey data
-* run in R: "$dofiles//22_Exposure data h3 by hazard.R"
+* run in R: "$dofiles//31_Exposure data h3 by hazard.R"
 
 // Editing exposure data at the h3_6 level
-do "$dofiles//34_Editing exposure data h3.do"
+do "$dofiles//32_Editing exposure data h3.do"
 
 
 *********************************************************************************

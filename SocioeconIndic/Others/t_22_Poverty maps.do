@@ -29,7 +29,7 @@ spshape2dta AFW_admin0, replace saving(AFW_admin0)
 /*
 These are the lowest level of admin regions available per country in the household surveys, which are different to the lowest available in the file "AFW_adminX.dta":
 	Admin1: CPV	
-	Admin2: CAF CIV GMB NER SEN SLE TGO	
+	Admin2: CAF CIV GAB GMB NER SEN SLE TGO	
 
 For the rest of the countries, the lowest level of admin regions available in the household surveys match that in the file "AFW_adminX.dta" (admin2 or admin3): 	
 	AdminX: BEN BFA CMR GHA GIN GNB LBR MLI MRT NGA TCD
@@ -43,7 +43,7 @@ For the rest of the countries, the lowest level of admin regions available in th
 use "$projectpath\1_data\Maps\boundaries\AFW_adminX.dta", clear
 
 // Drop the countries with admin1 or admin2 in household surveys but not in adminX	
-drop if inlist(code, "CPV", "CAF", "CIV", "GMB", "NER", "SEN", "SLE", "TGO")
+drop if inlist(code, "CPV", "CAF", "CIV", "GAB", "GMB", "NER", "SEN", "SLE", "TGO")
 
 // Save file
 save "$projectpath\1_data\Maps\boundaries\AFW_adminHS.dta", replace
@@ -58,7 +58,7 @@ assert _merge==3
 drop _merge
 
 // Drop the countries with admin1 or admin2 in household surveys but not in adminX	
-drop if inlist(code, "CPV", "CAF", "CIV", "GMB", "NER", "SEN", "SLE", "TGO")
+drop if inlist(code, "CPV", "CAF", "CIV", "GAB", "GMB", "NER", "SEN", "SLE", "TGO")
 drop code
 
 // Save file
@@ -98,7 +98,7 @@ save `ad1shp', replace
 use "$projectpath\1_data\Maps\boundaries\AFW_admin2.dta", clear
 
 // Keep observations of the countries we need with admin2 information
-keep if inlist(code, "CAF", "CIV", "GMB", "NER", "SEN", "SLE", "TGO")
+keep if inlist(code, "CAF", "CIV", "GAB", "GMB", "NER", "SEN", "SLE", "TGO")
 
 // Replace the _ID number to avoid merging errors and save a temporary file
 replace _ID = 20000+_ID 
@@ -115,7 +115,7 @@ assert _merge==3
 drop _merge
 
 // Keep observations of the countries we need with admin2 information
-keep if inlist(code, "CAF", "CIV", "GMB", "NER", "SEN", "SLE", "TGO")
+keep if inlist(code, "CAF", "CIV", "GAB", "GMB", "NER", "SEN", "SLE", "TGO")
 drop code
 	
 // Replace the _ID number to avoid merging errors and save a temporary file
@@ -148,7 +148,7 @@ use "$projectpath\3_results\hhss-exposure\\RS_All_se-gc-h3_adminX.dta", clear
 
 // Merge the AFW_adminHS with map coordinates 
 merge 1:1 geo_code using "$projectpath\1_data\Maps\boundaries\AFW_adminHS.dta", nogen keep(match using)
-	// Note: There is one observation in the household survey of MLI that is not in the AFW_adminHS data (region3=="11102)"
+	// Note: There is one observation in the household survey of MLI (region3=="11102") and one in the hhss of GAB ()that is not in the AFW_adminHS data 
 *assert _merge==3 | _merge==2  // We allow for regions not in the household survey but with map coordinates
 *drop if _merge==1 // There is one observation in the household survey of MLI that is not in the AFW_adminHS data (region3=="11102)"
 *drop _merge
@@ -205,7 +205,7 @@ graph save "$projectpath\3_results\SocioeconIndic\Figures\AFW_map_pov_2_15_lav.g
 /*
 	
 // These are the groups of countries depending on their lowest regional level of statistical significance
-region1 "BEN BFA CAF CIV CMR GIN GNB MLI NER SEN TCD TGO"
+region1 "BEN BFA CAF CIV CMR GAB GIN GNB MLI NER SEN TCD TGO"
 region2 "CPV GHA GMB LBR NGA SLE"
 region3 "MRT"	
 
