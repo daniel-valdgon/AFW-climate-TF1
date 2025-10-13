@@ -534,7 +534,6 @@ foreach cty in $countries{
 **********************************************************************
 
 foreach cty in $countries{
-
 	display in red "`cty'" 
 	
 	use "$data_hhss\\`cty'\\RS_`cty'.dta", clear

@@ -5,13 +5,13 @@
 *   First written: June 23, 2025
 *-----------------------------------------------------------------------
 
-** OJO!! This do-file is useful for verifying poverty results and for our own exercises, not for the database. Check content and change names after finishing the do-files for the database.
+** This do-file is useful for drawing poverty maps, not for constructing the database. 
 
 // Change the Stata directory in order to use the spshape2data command
 cd "$projectpath\1_data\Maps\boundaries"
 
 ** Use the shape file AFW_adminX.shp to generage the corresponding file and shape files in Stata format  
-	*Note: The file AFW_adminX.shp was generated in an R-script ("$dofiles//t_14_From gpkg to shp files for maps.R") from the file AFW_adminX.gpkg.
+	*Note: The file AFW_adminX.shp was generated in an R-script ("$dofiles/Others/t_14_From gpkg to shp files for maps.R") from the file AFW_adminX.gpkg.
 spshape2dta AFW_adminX, replace saving(AFW_adminX)
 	*Note: The previous command generated the following files in the same folder as AFW_adminX.gpkg: 
 		* AFW_adminX.dta, 
@@ -29,8 +29,9 @@ spshape2dta AFW_admin0, replace saving(AFW_admin0)
 /*
 These are the lowest level of admin regions available per country in the household surveys, which are different to the lowest available in the file "AFW_adminX.dta":
 	Admin1: CPV	
-	Admin2: CAF CIV GAB GMB NER SEN SLE TGO	
-
+	Admin2: CAF CIV GMB NER SEN SLE TGO	
+	Admin3: GAB
+	
 For the rest of the countries, the lowest level of admin regions available in the household surveys match that in the file "AFW_adminX.dta" (admin2 or admin3): 	
 	AdminX: BEN BFA CMR GHA GIN GNB LBR MLI MRT NGA TCD
 		Admin2: BEN GHA GIN GNB LBR MRT NGA TCD
@@ -148,7 +149,7 @@ use "$projectpath\3_results\hhss-exposure\\RS_All_se-gc-h3_adminX.dta", clear
 
 // Merge the AFW_adminHS with map coordinates 
 merge 1:1 geo_code using "$projectpath\1_data\Maps\boundaries\AFW_adminHS.dta", nogen keep(match using)
-	// Note: There is one observation in the household survey of MLI (region3=="11102") and one in the hhss of GAB ()that is not in the AFW_adminHS data 
+	// Note: There is one observation in the household survey of MLI (region3=="11102") that is not in the AFW_adminHS data 
 *assert _merge==3 | _merge==2  // We allow for regions not in the household survey but with map coordinates
 *drop if _merge==1 // There is one observation in the household survey of MLI that is not in the AFW_adminHS data (region3=="11102)"
 *drop _merge
@@ -198,9 +199,10 @@ graph save "$projectpath\3_results\SocioeconIndic\Figures\AFW_map_pov_2_15_lav.g
 
 
 
-***********************************************************************************************************************************************
-**# Generate file with admin codes corresponding to the lowest regional level of statistical significance per country the household surveys #**
-***********************************************************************************************************************************************
+****************************************************************************
+**# Generate file with admin codes corresponding to the lowest regional  #**
+**#  level of statistical significance per country the household surveys #**
+****************************************************************************
 
 /*
 	

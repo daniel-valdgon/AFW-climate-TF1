@@ -117,7 +117,7 @@ foreach cty in $countries{
 	order sep14 pop_geo_code pop_year_geo_code, after(freq)
 
 	// Drop unnecessary variables
-	drop code-freq	
+	drop code hazard source climate freq	
 	
 	// Save household survey data with harmonized socioeconomic and exposure variables
 	save "$projectpath\3_results\hhss-exposure\\`cty'\\RS_`cty'_se_geocode_h3_exp.dta", replace
@@ -199,7 +199,7 @@ foreach cty in $countries{
 	order sep15, before(pop_h3)
 
 	gen sep16 = "sep16"
-	label var sep16 "******* Section 16: Hazard exposure variables at h3 or lowest available level *******"
+	label var sep16 "******* Section 16: Hazard exposure variables (imputed) at h3 or lowest available level *******"
 	
 	// Generate the exposure variable with h3 values (when available) and with the lowest regional level available (otherwise)
 	foreach ha in dr fl he po se{
@@ -207,17 +207,26 @@ foreach cty in $countries{
 			gen `var'_l = `var'_h3
 			replace `var'_l = `var' if _m_`ha'_h3obs!=1
 			local lbl: variable label `var'
-			label var `var'_l "`lbl' at h3 or lowest level"
+			label var `var'_l "`lbl' (imputed) at h3 or lowest level"
 		}		
 	}
 
+	
+	// Save a file with the variables that identify the matching status between hhss and hazard data
+	preserve
+		keep hid-pid_orig _m*
+		save "$projectpath\3_results\hhss-exposure\\`cty'\\RS_`cty'_Matching status hhss-hazard.dta", replace
+	restore
+
+	// Drop the variables that identify the matching status between hhss and hazard data (we do not need them in this file)	
+	drop _m*
 	
 	// Save household survey data with harmonized socioeconomic and exposure variables at h3 level or lowest available
 	save "$projectpath\3_results\hhss-exposure\\`cty'\\RS_`cty'_se_geocode_h3_exp.dta", replace	
 	
 }
-	
 
+	
 **********************************************************************************************************************
 **# Table with matching observations between household survey data and exposure data at the geo_code and h3 levels #**
 **********************************************************************************************************************
@@ -225,7 +234,7 @@ foreach cty in $countries{
 // Open loop for countries
 foreach cty in $countries{
 
-	use "$projectpath\3_results\hhss-exposure\\`cty'\\RS_`cty'_se_geocode_h3_exp.dta", clear
+	use "$projectpath\3_results\hhss-exposure\\`cty'\\RS_`cty'_Matching status hhss-hazard.dta", clear
 
 	count // Count total observations per country and save in a local
 	local t = r(N)

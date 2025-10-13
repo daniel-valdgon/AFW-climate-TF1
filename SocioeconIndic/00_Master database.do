@@ -76,4 +76,31 @@ do "$dofiles//32_Editing exposure data h3.do"
 do "$dofiles//41_Merging exposure data by geo_code h3.do"
 
 
+*****************************************************************************
+***# Example to incorporate another hazard types in a countries database #***
+*****************************************************************************
+* Note: This section is an optional example.
+
+// Example (In R): Extract "BEN_Flood - any (450m) - RP20" data from the file "Flood - any (450m)"
+* run in R: "$dofiles//51_Example_Extract BEN_Flood - any (450m) - RP20.R"
+
+// Example: Merging "BEN_Flood - any (450m) - RP20" in Benin's dataset
+*do "$dofiles//52_Example_Merging BEN_Flood - any (450m) - RP20 in dataset.do"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -1,8 +1,11 @@
+*-----------------------------------------------------------------------
+*	Title: Obtain exposure maps for AFW 
+*   Project: Regional study on exposure to shocks in SSA countries 
+*	Author: Bernardo Atuesta
+*   First written: June 23, 2025
+*-----------------------------------------------------------------------
 
-
-
-
-
+// Open the agricultural drought exposure data file at the geo_code level
 use "$projectpath\3_results\exposure\Agricultural drought - AEP2p5.dta", clear
 
 // Merge the AFW_adminHS with map coordinates (this file was created in the Poverty maps do-file)
@@ -45,13 +48,12 @@ spmap dr_f2p5_i30_sh_cat using "$projectpath\1_data\Maps\boundaries\AFW_adminHS_
 graph save "$projectpath\3_results\exposure\Figures\AFW_map_dr_f2p5_i30_sh_cat_lav.gph", replace	
 
 
-** El mapa de abajo lo habia construido antes y es posible que me sirva. En este caso se inicia en el archivo de encuestas de hogares, pero me parece que no es necesario.
+** The map in the following section was a essay that could be useful for other purposes, so I decided to keep it, but commented:
 
-
+/*
 ***********************************************
 **# Generating maps for exposure indicators #**
 ***********************************************
-
 
 ** Merge regional data with socioecon indicator with exposure data for mapping
 
@@ -101,6 +103,6 @@ spmap dr_f2p5_i30_sh_cat using "$projectpath\1_data\Maps\boundaries\AFW_adminHS_
 	clmethod(unique) legend(size(small)) ///
 	title("Share of pop exposed to drought AEP2.5 and >30% land affected", size(medsmall))
 	
-	
+*/	
 	
 	

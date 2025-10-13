@@ -1,5 +1,3 @@
-## This script is not used anymore. I keep it in the older versions, just in case.
-
 #---------------------------------------------------------------------------------------------------
 #	Title: Reading .gpkg file and exporting .shp shape-files to read in Stata for maps
 # Project: Regional study on exposure to shocks in SSA countries 
@@ -44,19 +42,18 @@ st_write(gpkg_data, "./1_data/Maps/boundaries/AFW_admin0.shp")
 ## Exploring the am24_admin0.gpkg datafile
 
 # Save am24_admin0.gpkg in an object called am24_admin0.
-am24_admin0 <- st_read("./1_data/Maps/boundaries/am24_admin0.gpkg")
+#am24_admin0 <- st_read("./1_data/Maps/boundaries/am24_admin0.gpkg")
 # View the first few rows
-head(am24_admin0)
+#head(am24_admin0)
 
 # Create a new data frame with only the first 10 rows and 4 columns of am24_admin0
-am24_admin0_subset <- am24_admin0[10, 1:4]
+#am24_admin0_subset <- am24_admin0[10, 1:4]
 
 # Open it in the Viewer pane
-View(am24_admin0_subset)
-
+#View(am24_admin0_subset)
 
 # View the full content of the first row and the column geom
-as.character(am24_admin0[1, "geom"])
+#as.character(am24_admin0[1, "geom"])
 
 
 
